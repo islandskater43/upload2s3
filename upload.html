@@ -65,7 +65,7 @@
       </form>
 
       <div class="footer">
-        
+
       </div>
 
     </div>
@@ -84,14 +84,17 @@
       }
 
       function setup () {
-        var config = JSON.parse(getURLParameter('config',location.search));
+        var configString = getURLParameter('config',location.search);
+        var config = JSON.parse(configString);
         var bucketBase = "https://" + config.bucketName + ".s3.amazonaws.com/";
 
         // set form action
         $("form").attr("action",bucketBase);
 
         // set successURL
-        if(config.successURL == null) config.successURL = location.href;
+        var successURL = config.successURL;
+        if(successURL == null) successURL = location.href;
+        successURL = successURL + "?success=true&config=" + encodeURIComponent(configString);
         $("#successURL").val(config.successURL);
 
         // update requester & title
