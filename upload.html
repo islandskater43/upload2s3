@@ -1,0 +1,143 @@
+<html>
+  <head>
+    <title>Upload2s3 POST Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  </head>
+
+  <body style="background-color:gray;">
+
+    <div class="container" style="background-color:white;">
+      <div class="page-header">
+        <div id="imageDiv"></div>
+        <h2><span id="paramTitle">Upload2s3 File Drop Box</span></h2>
+      </div>
+
+      <!-- success msg gets injected here -->
+      <div id="success"></div>
+
+      <p class="lead" id="introText">Use the following form to submit a file when requested to do so by <span class="paramRequester">the requester</span>. This is typically due to an attachment's size or contents.</p>
+
+      <p class="lead">
+        <strong>Note: Files are automatically deleted after <span id="paramDaysToDelete">5</span> days.</strong> Make sure to reach out to <span class="paramRequester">the requester</span> after successful upload.
+      </p>
+
+      <form action="" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="key" value="uploads/${filename}">
+        <input type="hidden" name="success_action_redirect" id="successURL" value="">
+        <!-- Include any additional input fields here -->
+
+
+
+      <div class="row">
+        <div class="col-xs-3 col-sm-3">
+          <div class="centerBlock">
+            <label class="btn btn-default btn-file btn-lg">
+                Browse <input type="file" id="fileToUpload" style="display: none;" name="file" onchange="fileChange()">
+            </label>
+          </div>
+        </div>
+
+        <div class="col-xs-12 col-sm-6">
+          <div class="centerBlock">
+            <p id="filenameText" class="lead"></p>
+          </div>
+        </div>
+
+        <div class="col-xs-6 col-sm-3 centerBlock">
+          <input type="submit" class="btn btn-primary btn-lg" value="Upload File">
+        </div>
+
+      </div>
+
+
+      </form>
+
+      <div class="footer">
+        
+      </div>
+
+    </div>
+
+    <script type="text/javascript">
+      function fileChange() {
+        var filepath = document.getElementById('fileToUpload').value;
+        var filename = filepath.split(/(\\|\/)/g).pop();
+        document.getElementById('filenameText').innerHTML = filename;
+      }
+
+      function getURLParameter(name, source) {
+          return decodeURIComponent((new RegExp('[?|&|#]' + name + '=' +
+            '([^&]+?)(&|#|;|$)').exec(source) || [,""])[1].replace(/\+/g,
+            '%20')) || null;
+      }
+
+      function setup () {
+        var config = JSON.parse(getURLParameter('config',location.search));
+        var bucketBase = "https://" + config.bucketName + ".s3.amazonaws.com/";
+
+        // set form action
+        $("form").attr("action",bucketBase);
+
+        // set successURL
+        if(config.successURL == null) config.successURL = location.href;
+        $("#successURL").val(config.successURL);
+
+        // update requester & title
+        if(isLegit(config.requester)) $(".paramRequester").text(config.requester);
+        if(isLegit(config.pageTitle)) $("#paramTitle").text(config.pageTitle);
+
+        // add image
+        if(isLegit(config.image)) {
+          var img = document.createElement("img");
+          img.setAttribute("src",config.image);
+          img.setAttribute("alt", "logo image");
+          document.getElementById("imageDiv").appendChild(img);
+        }
+
+        // check for success string
+        if(getURLParameter('success',location.search) != null) {
+          //var bucketName = getURLParameter('bucket',location.search);
+          var key = getURLParameter('key',location.search);
+          var url = bucketBase + key;
+
+          var aObj = document.createElement("a");
+          aObj.setAttribute("href",url);
+          aObj.innerHTML = url;
+
+          var divObj = document.createElement("div");
+          divObj.setAttribute("id","successMessage");
+          divObj.setAttribute("class","alert alert-success");
+          divObj.innerHTML="Your file was successfully uploaded. Please share the following link - ";
+          divObj.appendChild(aObj);
+
+          document.getElementById("success").appendChild(divObj);
+
+        }
+
+      }
+
+      function isLegit (value) {
+        return value !=null && value != undefined;
+      }
+
+      $(document).ready(function(){
+        setup();
+      });
+
+    </script>
+
+  </body>
+
+</html>
